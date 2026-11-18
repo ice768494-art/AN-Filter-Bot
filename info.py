@@ -11,9 +11,9 @@ id_pattern = re.compile(r'^.\d+$')
 
 # Bot information
 SESSION = environ.get('SESSION', 'TechVJBot')
-API_ID = int(environ.get('API_ID', ''))
-API_HASH = environ.get('API_HASH', '')
-BOT_TOKEN = environ.get('BOT_TOKEN', "")
+API_ID = int(environ.get('API_ID',38221620 ''))
+API_HASH = environ.get('API_HASH',bfbb7c68c27ea9b969e6bd6ca0248c4e '')
+BOT_TOKEN = environ.get('BOT_TOKEN',9076961788:AAFFdVdXMKfNaCvx44NlX6tkNqMmnAMYH_Y "")
 
 
 # This Pictures Is For Start Message Picture, You Can Add Multiple By Giving One Space Between Each.
@@ -21,15 +21,15 @@ PICS = (environ.get('PICS', 'https://graph.org/file/ce1723991756e48c35aa1.jpg'))
 
 
 # Admins & Users
-ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '').split()] # For Multiple Id Use One Space Between Each.
+ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS',8659374782 '').split()] # For Multiple Id Use One Space Between Each.
 auth_users = [int(user) if id_pattern.search(user) else user for user in environ.get('AUTH_USERS', '').split()]  # For Multiple Id Use One Space Between Each.
 AUTH_USERS = (auth_users + ADMINS) if auth_users else []
 
 # This Channel Is For When User Start Your Bot Then Bot Send That User Name And Id In This Log Channel, Same For Group Also.
-LOG_CHANNEL = int(environ.get('LOG_CHANNEL', ''))
+LOG_CHANNEL = int(environ.get('LOG_CHANNEL',-1004301363575''))
 
 # This Is File Channel Where You Upload Your File Then Bot Automatically Save It In Database 
-CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '').split()]  # For Multiple Id Use One Space Between Each.
+CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS',-1004301363575'').split()]  # For Multiple Id Use One Space Between Each.
 
 # auth_channel means force subscribe channel.
 # if REQUEST_TO_JOIN_MODE is true then force subscribe work like request to join fsub, else if false then work like normal fsub.
@@ -59,7 +59,7 @@ DELETE_CHANNELS = [int(dch) if id_pattern.search(dch) else dch for dch in enviro
 
 
 # MongoDB information
-DATABASE_URI = environ.get('DATABASE_URI', "")   # IF Multiple Database Is False Then Fill Only This Database Url.
+DATABASE_URI = environ.get('DATABASE_URI', "mongodb+srv://mehtabbabu732_db_user:<db_password>@synix.q2zhqgr.mongodb.net/")   # IF Multiple Database Is False Then Fill Only This Database Url.
 DATABASE_NAME = environ.get('DATABASE_NAME', "techvjclonefilterbot")
 COLLECTION_NAME = environ.get('COLLECTION_NAME', 'vjcollection')
 
@@ -88,8 +88,8 @@ PUBLIC_FILE_CHANNEL = environ.get('PUBLIC_FILE_CHANNEL', '') # Public Channel Us
 
 
 # Links
-GRP_LNK = environ.get('GRP_LNK', 'https://t.me/vj_bot_disscussion')
-CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/vj_bots')
+GRP_LNK = environ.get('GRP_LNK', https://t.me/+HuWMPl4q4kZhYmI1')
+CHNL_LNK = environ.get('CHNL_LNK',https://t.me/+HuWMPl4q4kZhYmI1')
 SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'vj_bot_disscussion') # Support Chat Link Without https:// or @
 OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/kingvj01')
 
