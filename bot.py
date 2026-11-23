@@ -18,6 +18,9 @@ logging.getLogger().setLevel(logging.INFO)
 logging.getLogger("pyrogram").setLevel(logging.ERROR)
 logging.getLogger("cinemagoer").setLevel(logging.ERROR)
 
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+
 from pyrogram import Client, idle
 from database.users_chats_db import db
 from info import *
@@ -98,5 +101,4 @@ if __name__ == '__main__':
         logging.info('Service Stopped Bye 👋')
     finally:
         loop.close()
-
-
+    
