@@ -1,22 +1,40 @@
-# Don't Remove Credit @VJ_Bots
-# Subscribe YouTube Channel For Amazing Bot @Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+# Optional OpenAI helper. Configure OPENAI_API_KEY in the hosting environment.
 
-import openai
+import os
+import aiohttp
+
 
 async def ai(query):
-    openai.api_key = "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" #Your openai api key
-    response = openai.Completion.create(engine="text-davinci-002", prompt=query, max_tokens=100, n=1, stop=None, temperature=0.9, timeout=5)
-    return response.choices[0].text.strip()
-     
-async def ask_ai(client, m, message):
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError("AI helper is disabled. Set OPENAI_API_KEY to enable it.")
+
+    payload = {
+        "model": os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        "messages": [{"role": "user", "content": query}],
+        "max_tokens": 150,
+        "temperature": 0.7,
+    }
+    timeout = aiohttp.ClientTimeout(total=30)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}"},
+            json=payload,
+        ) as response:
+            data = await response.json(content_type=None)
+            if response.status >= 400:
+                detail = data.get("error", {}).get("message", "Unknown API error")
+                raise RuntimeError(f"OpenAI API returned {response.status}: {detail}")
+            return (data["choices"][0]["message"].get("content") or "").strip()
+
+
+async def ask_ai(client, message_to_edit, message):
+    parts = (message.text or "").split(" ", 1)
+    if len(parts) < 2 or not parts[1].strip():
+        return await message_to_edit.edit("Please enter a question after /openai.")
     try:
-        question = message.text.split(" ", 1)[1]
-        # Generate response using OpenAI API
-        response = await ai(question)
-        # Send response back to user
-        await m.edit(f"{response}")
-    except Exception as e:
-        # Handle other errors
-        error_message = f"An error occurred: {e}"
-        await m.edit(error_message)
+        response = await ai(parts[1].strip())
+        await message_to_edit.edit(response or "No response was returned.")
+    except Exception as exc:
+        await message_to_edit.edit(f"AI request failed: {exc}")
