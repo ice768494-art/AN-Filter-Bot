@@ -7,6 +7,11 @@
 import importlib, logging, logging.config, pytz, asyncio
 from pathlib import Path
 
+# Create the bot event loop before importing modules that create Motor clients.
+# Motor must use the same loop that runs start().
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+
 # Get logging configurations
 logging.config.fileConfig('logging.conf')
 logging.getLogger().setLevel(logging.INFO)
@@ -88,8 +93,10 @@ async def start():
 
 if __name__ == '__main__':
     try:
-        asyncio.run(start())
+        loop.run_until_complete(start())
     except KeyboardInterrupt:
         logging.info('Service Stopped Bye 👋')
+    finally:
+        loop.close()
 
 
