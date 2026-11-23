@@ -98,7 +98,17 @@ if __name__ == '__main__':
     try:
         loop.run_until_complete(start())
     except KeyboardInterrupt:
-        logging.info('Service Stopped Bye 👋')
+        logging.info("Service Stopped Bye 👋")
     finally:
+        pending = asyncio.all_tasks(loop)
+
+        for task in pending:
+            task.cancel()
+
+        if pending:
+            loop.run_until_complete(
+                asyncio.gather(*pending, return_exceptions=True)
+            )
+
         loop.close()
     
