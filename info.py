@@ -112,10 +112,10 @@ PUBLIC_FILE_CHANNEL = environ.get('PUBLIC_FILE_CHANNEL', '') # Public Channel Us
 
 
 # Links
-GRP_LNK = environ.get('GRP_LNK', 'https://t.me/AnimeNetworkTamil')
+GRP_LNK = environ.get('GRP_LNK', 'https://t.me/+6mK13edlrFA4OWU1')
 CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/AnimeNetworkTamil')
-SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'AnimeNetworkTamil') # Support Chat Link Without https:// or @
-OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/AnimeNetworkTamil')
+SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'https://t.me/Tamil_Animes_New') # Support Chat Link Without https:// or @
+OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/An_owner_bot')
 
 # True Or False
 AI_SPELL_CHECK = env_bool('AI_SPELL_CHECK', True)
