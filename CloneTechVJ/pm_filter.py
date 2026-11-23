@@ -1,6 +1,6 @@
 # Don't Remove Credit @VJ_Bots
 # Subscribe YouTube Channel For Amazing Bot @Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+# Ask Doubt on telegram @AnimeNetworkTamil
 
 # Clone Code Credit : YT - @Tech_VJ / TG - @VJ_Bots / GitHub - @VJBots
 
@@ -1020,7 +1020,7 @@ async def advantage_spell_chok(client, name, msg, reply_msg, vj_search):
     SPELL_CHECK[mv_id] = movielist
     if vj_search == True:
         vj_search_new = False
-        vj_ai_msg = await reply_msg.edit_text("<b><i>Advance Ai Of Tech VJ Try To Find Your Movie With Your Wrong Spelling.</i></b>")
+        vj_ai_msg = await reply_msg.edit_text("<b><i>Advance Ai Of AnimeNetworkTamil Try To Find Your Movie With Your Wrong Spelling.</i></b>")
         movienamelist = []
         movienamelist += [movie.get('title') for movie in movies]
         for techvj in movienamelist:
