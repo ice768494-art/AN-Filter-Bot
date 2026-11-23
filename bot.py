@@ -1,248 +1,147 @@
-
 # Don't Remove Credit @VJ_Bots
 # Subscribe YouTube Channel For Amazing Bot @Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
 # Clone Code Credit : YT - @Tech_VJ / TG - @VJ_Bots / GitHub - @VJBots
 
-import importlib
-import logging
-import logging.config
-import pytz
-import asyncio
-
+import importlib, logging, logging.config, pytz, asyncio
 from pathlib import Path
-from datetime import date, datetime
-from typing import Union, Optional, AsyncGenerator
+from pyrogram.handlers.handler import Handler
 
-from aiohttp import web
-from pyrogram import Client, idle
-
-# Create ONE event loop before importing database modules.
+# Create the bot event loop before importing modules that create Motor clients.
+# Motor must use the same loop that runs start().
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 
-# Logging configuration
+# Get logging configurations
 logging.config.fileConfig('logging.conf')
 logging.getLogger().setLevel(logging.INFO)
 logging.getLogger("pyrogram").setLevel(logging.ERROR)
 logging.getLogger("cinemagoer").setLevel(logging.ERROR)
 
-# Bot imports
+from pyrogram import Client, idle
 from database.users_chats_db import db
 from info import *
 from utils import temp
-from Script import script
+from typing import Union, Optional, AsyncGenerator
+from Script import script 
+from datetime import date, datetime 
+from aiohttp import web
 from plugins import web_server
 from plugins.clone import restart_bots
 
 from TechVJ.bot import TechVJBot
-from TechVJ.bot.clients import initialize_clients, multi_clients
 from TechVJ.util.keepalive import ping_server
-
+from TechVJ.bot.clients import initialize_clients
 
 def load_plugins():
-    """Import plugin modules once, including nested plugin folders."""
+    """Import every plugin module and collect its Pyrogram handlers.
+
+    Plugins use the class-level decorators (@Client.on_message, ...). Those only
+    tag the function with a `.handlers` list; they do NOT register anything on
+    their own. Pyrogram registers them only when the client is created with
+    `plugins={"root": ...}`. Because plugins are imported manually here, we must
+    collect and register the handlers ourselves, otherwise the bot connects but
+    never answers any message.
+    """
+    collected = []
+    seen = set()
     for plugin_path in sorted(Path("plugins").rglob("*.py")):
         if plugin_path.name == "__init__.py":
             continue
-
-        relative = plugin_path.relative_to(
-            Path("plugins")
-        ).with_suffix("")
-
+        relative = plugin_path.relative_to(Path("plugins")).with_suffix("")
         module_name = "plugins." + ".".join(relative.parts)
-
-        importlib.import_module(module_name)
+        module = importlib.import_module(module_name)
+        for obj in list(vars(module).values()):
+            if not callable(obj):
+                continue
+            func_handlers = getattr(obj, "handlers", None)
+            if not isinstance(func_handlers, list):
+                continue
+            for item in func_handlers:
+                try:
+                    handler, group = item
+                except (TypeError, ValueError):
+                    continue
+                if isinstance(handler, Handler) and isinstance(group, int) and id(handler) not in seen:
+                    seen.add(id(handler))
+                    collected.append((handler, group))
         logging.info("Loaded plugin: %s", module_name)
+    return collected
 
 
-async def stop_clients():
-    """Stop all connected Pyrogram clients gracefully."""
+def register_handlers(handlers):
+    for handler, group in handlers:
+        TechVJBot.add_handler(handler, group)
+    logging.info("Registered %d handlers", len(handlers))
+    if not handlers:
+        logging.error("NO HANDLERS REGISTERED - the bot will not respond to anything!")
 
-    clients = list(multi_clients.values())
 
-    if TechVJBot not in clients:
-        clients.append(TechVJBot)
-
-    for client in reversed(clients):
-        try:
-            if client and client.is_connected:
-                await client.stop()
-                logging.info("Pyrogram client stopped")
-
-        except Exception:
-            logging.exception("Error stopping Pyrogram client")
+async def start_web_server():
+    app = web.AppRunner(await web_server())
+    await app.setup()
+    await web.TCPSite(app, "0.0.0.0", PORT).start()
+    logging.info("Web server listening on 0.0.0.0:%s", PORT)
 
 
 async def start():
-    app = None
-    keepalive_task = None
-
+    print('\n')
+    print('Initializing Your Bot')
+    plugin_handlers = load_plugins()
+    # Open the HTTP port immediately so Render's port scan / health check passes.
+    await start_web_server()
+    await TechVJBot.start()
+    register_handlers(plugin_handlers)
+    await asyncio.sleep(0)  # let the dispatcher apply the queued add_handler tasks
+    await initialize_clients()
+    if ON_HEROKU or ON_RENDER:
+        asyncio.create_task(ping_server())
+    b_users, b_chats = await db.get_banned()
+    temp.BANNED_USERS = b_users
+    temp.BANNED_CHATS = b_chats
+    me = await TechVJBot.get_me()
+    temp.BOT = TechVJBot
+    temp.ME = me.id
+    temp.U_NAME = me.username
+    temp.B_NAME = me.first_name
+    logging.info(script.LOGO)
+    tz = pytz.timezone('Asia/Kolkata')
+    today = date.today()
+    now = datetime.now(tz)
+    time = now.strftime("%H:%M:%S %p")
     try:
-        print("\n")
-        print("Initializing Your Bot")
-
-        # Load plugins
-        load_plugins()
-
-        # Start main bot
-        await TechVJBot.start()
-
-        # Initialize additional clients
-        await initialize_clients()
-
-        # Keepalive
-        if ON_HEROKU:
-            keepalive_task = asyncio.create_task(ping_server())
-
-        # Database
-        b_users, b_chats = await db.get_banned()
-
-        temp.BANNED_USERS = b_users
-        temp.BANNED_CHATS = b_chats
-
-        # Bot information
-        me = await TechVJBot.get_me()
-
-        temp.BOT = TechVJBot
-        temp.ME = me.id
-        temp.U_NAME = me.username
-        temp.B_NAME = me.first_name
-
-        logging.info(script.LOGO)
-
-        # Time information
-        tz = pytz.timezone('Asia/Kolkata')
-        today = date.today()
-        now = datetime.now(tz)
-        time = now.strftime("%H:%M:%S %p")
-
-        # Restart message
+        await TechVJBot.send_message(chat_id=LOG_CHANNEL, text=script.RESTART_TXT.format(today, time))
+    except:
+        print("Make Your Bot Admin In Log Channel With Full Rights")
+    for ch in CHANNELS:
         try:
-            await TechVJBot.send_message(
-                chat_id=LOG_CHANNEL,
-                text=script.RESTART_TXT.format(today, time)
-            )
-        except Exception:
-            logging.exception(
-                "Make Your Bot Admin In Log Channel With Full Rights"
-            )
-
-        # File channels
-        for ch in CHANNELS:
-            try:
-                msg = await TechVJBot.send_message(
-                    chat_id=ch,
-                    text="**Bot Restarted**"
-                )
-                await msg.delete()
-
-            except Exception:
-                logging.exception(
-                    "Make Your Bot Admin In File Channels With Full Rights"
-                )
-
-        # Force subscription channel
+            k = await TechVJBot.send_message(chat_id=ch, text="**Bot Restarted**")
+            await k.delete()
+        except:
+            print("Make Your Bot Admin In File Channels With Full Rights")
+    try:
+        k = await TechVJBot.send_message(chat_id=AUTH_CHANNEL, text="**Bot Restarted**")
+        await k.delete()
+    except:
+        print("Make Your Bot Admin In Force Subscribe Channel With Full Rights")
+    if CLONE_MODE == True:
+        print("Restarting All Clone Bots.......")
         try:
-            msg = await TechVJBot.send_message(
-                chat_id=AUTH_CHANNEL,
-                text="**Bot Restarted**"
-            )
-            await msg.delete()
-
-        except Exception:
-            logging.exception(
-                "Make Your Bot Admin In Force Subscribe Channel With Full Rights"
-            )
-
-        # Restart clone bots
-        if CLONE_MODE:
-            print("Restarting All Clone Bots.......")
-
             await restart_bots()
-
             print("Restarted All Clone Bots.")
-
-        # Start web server
-        app = web.AppRunner(await web_server())
-        await app.setup()
-
-        bind_address = "0.0.0.0"
-
-        await web.TCPSite(
-            app,
-            bind_address,
-            PORT
-        ).start()
-
-        logging.info("Web server started on port %s", PORT)
-
-        # Keep bot alive
-        await idle()
-
-    finally:
-        logging.info("Starting graceful shutdown...")
-
-        # Stop keepalive
-        if keepalive_task:
-            keepalive_task.cancel()
-
-            await asyncio.gather(
-                keepalive_task,
-                return_exceptions=True
-            )
-
-        # Stop web server
-        if app:
-            try:
-                await app.cleanup()
-                logging.info("Web server stopped")
-
-            except Exception:
-                logging.exception("Web server cleanup failed")
-
-        # Stop Pyrogram clients
-        await stop_clients()
-
-        logging.info("Shutdown completed")
+        except Exception:
+            logging.exception("Failed restarting clone bots")
+    logging.info("Bot is up and listening for updates")
+    await idle()
 
 
 if __name__ == '__main__':
-
     try:
         loop.run_until_complete(start())
-
     except KeyboardInterrupt:
-        logging.info("Service Stopped Bye 👋")
-
-    except Exception:
-        logging.exception("Bot stopped because of an error")
-
+        logging.info('Service Stopped Bye 👋')
     finally:
-        try:
-            pending = [
-                task for task in asyncio.all_tasks(loop)
-                if not task.done()
-            ]
+        loop.close()
 
-            for task in pending:
-                task.cancel()
 
-            if pending:
-                loop.run_until_complete(
-                    asyncio.gather(
-                        *pending,
-                        return_exceptions=True
-                    )
-                )
-
-            loop.run_until_complete(
-                loop.shutdown_asyncgens()
-            )
-
-        except Exception:
-            logging.exception("Final event loop cleanup failed")
-
-        finally:
-            loop.close()
