@@ -4,7 +4,7 @@
 
 # Clone Code Credit : YT - @Tech_VJ / TG - @VJ_Bots / GitHub - @VJBots
 
-import sys, glob, importlib, logging, logging.config, pytz, asyncio
+import importlib, logging, logging.config, pytz, asyncio
 from pathlib import Path
 
 # Get logging configurations
@@ -28,28 +28,23 @@ from TechVJ.bot import TechVJBot
 from TechVJ.util.keepalive import ping_server
 from TechVJ.bot.clients import initialize_clients
 
-ppath = "plugins/*.py"
-files = glob.glob(ppath)
-TechVJBot.start()
-loop = asyncio.get_event_loop()
+def load_plugins():
+    """Import plugin modules once, including optional nested plugin folders."""
+    for plugin_path in sorted(Path("plugins").rglob("*.py")):
+        if plugin_path.name == "__init__.py":
+            continue
+        relative = plugin_path.relative_to(Path("plugins")).with_suffix("")
+        module_name = "plugins." + ".".join(relative.parts)
+        importlib.import_module(module_name)
+        logging.info("Loaded plugin: %s", module_name)
 
 
 async def start():
     print('\n')
-    print('Initalizing Your Bot')
-    bot_info = await TechVJBot.get_me()
+    print('Initializing Your Bot')
+    load_plugins()
+    await TechVJBot.start()
     await initialize_clients()
-    for name in files:
-        with open(name) as a:
-            patt = Path(a.name)
-            plugin_name = patt.stem.replace(".py", "")
-            plugins_dir = Path(f"plugins/{plugin_name}.py")
-            import_path = "plugins.{}".format(plugin_name)
-            spec = importlib.util.spec_from_file_location(import_path, plugins_dir)
-            load = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(load)
-            sys.modules["plugins." + plugin_name] = load
-            print("Tech VJ Imported => " + plugin_name)
     if ON_HEROKU:
         asyncio.create_task(ping_server())
     b_users, b_chats = await db.get_banned()
@@ -93,7 +88,7 @@ async def start():
 
 if __name__ == '__main__':
     try:
-        loop.run_until_complete(start())
+        asyncio.run(start())
     except KeyboardInterrupt:
         logging.info('Service Stopped Bye 👋')
 

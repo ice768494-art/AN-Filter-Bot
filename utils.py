@@ -4,7 +4,6 @@
 
 import logging, asyncio, os, re, random, pytz, aiohttp, requests, string, json, http.client
 from info import *
-from imdb import Cinemagoer 
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
 from pyrogram import enums
 from pyrogram.errors import *
@@ -19,10 +18,18 @@ from shortzy import Shortzy
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+try:
+    from imdb import Cinemagoer
+    imdb = Cinemagoer()
+except Exception as exc:
+    # IMDb lookup is optional; a missing local dataset or blocked IMDb request
+    # must never prevent the Telegram bot from starting.
+    logger.warning("IMDb integration is unavailable: %s", exc)
+    imdb = None
 join_db = JoinReqs
 BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)\]\((buttonurl|buttonalert):(?:/{0,2})(.+?)(:same)?\))")
 
-imdb = Cinemagoer(accessSystem='http')
 TOKENS = {}
 VERIFIED = {}
 BANNED = {}
@@ -94,6 +101,8 @@ async def is_subscribed(bot, query):
         return False
 
 async def get_poster(query, bulk=False, id=False, file=None):
+    if imdb is None:
+        return None
     if not id:
         query = (query.strip()).lower()
         title = query
@@ -107,7 +116,11 @@ async def get_poster(query, bulk=False, id=False, file=None):
                 year = list_to_str(year[:1]) 
         else:
             year = None
-        movieid = imdb.search_movie(title.lower(), results=10)
+        try:
+            movieid = imdb.search_movie(title.lower(), results=10)
+        except Exception as exc:
+            logger.warning("IMDb search failed: %s", exc)
+            return None
         if not movieid:
             return None
         if year:
@@ -124,7 +137,11 @@ async def get_poster(query, bulk=False, id=False, file=None):
         movieid = movieid[0].movieID
     else:
         movieid = query
-    movie = imdb.get_movie(movieid)
+    try:
+        movie = imdb.get_movie(movieid)
+    except Exception as exc:
+        logger.warning("IMDb details lookup failed: %s", exc)
+        return None
     if not movie:
         return None
     if movie.get("original air date"):
