@@ -112,10 +112,10 @@ PUBLIC_FILE_CHANNEL = environ.get('PUBLIC_FILE_CHANNEL', '') # Public Channel Us
 
 
 # Links
-GRP_LNK = environ.get('GRP_LNK', 'https://t.me/AnimeNetworkTamil')
+GRP_LNK = environ.get('GRP_LNK', 'https://t.me/+pSRgVoGKnpNkMjM1')
 CHNL_LNK = environ.get('CHNL_LNK', 'https://t.me/AnimeNetworkTamil')
-SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'AnimeNetworkTamil') # Support Chat Link Without https:// or @
-OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/AnimeNetworkTamil')
+SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'https://t.me/Tamil_Animes_New') # Support Chat Link Without https:// or @
+OWNER_LNK = environ.get('OWNER_LNK', 'https://t.me/An_Owner_Bot')
 
 # True Or False
 AI_SPELL_CHECK = env_bool('AI_SPELL_CHECK', True)
@@ -123,7 +123,7 @@ PM_SEARCH = env_bool('PM_SEARCH', True)
 BUTTON_MODE = env_bool('BUTTON_MODE', True)
 MAX_BTN = env_bool('MAX_BTN', True)
 IS_TUTORIAL = env_bool('IS_TUTORIAL', False)
-IMDB = env_bool('IMDB', False)
+IMDB = env_bool('IMDB', True)
 AUTO_FFILTER = env_bool('AUTO_FFILTER', True)
 AUTO_DELETE = env_bool('AUTO_DELETE', True)
 LONG_IMDB_DESCRIPTION = env_bool('LONG_IMDB_DESCRIPTION', False)
@@ -197,11 +197,11 @@ URL = environ.get("URL") or environ.get("RENDER_EXTERNAL_URL") or "https://testo
 
 
 # Rename Info : If True Then Bot Rename File Else Not
-RENAME_MODE = env_bool('RENAME_MODE', False) # Set True or False
+RENAME_MODE = env_bool('RENAME_MODE', True) # Set True or False
 
 
 # Auto Approve Info : If True Then Bot Approve New Upcoming Join Request Else Not
-AUTO_APPROVE_MODE = env_bool('AUTO_APPROVE_MODE', False) # Set True or False
+AUTO_APPROVE_MODE = env_bool('AUTO_APPROVE_MODE', True) # Set True or False
 
 
 # Start Command Reactions
