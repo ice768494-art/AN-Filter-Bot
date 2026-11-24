@@ -82,6 +82,13 @@ async def pm_text(bot, message):
         ai_search = True
         reply_msg = await bot.send_message(message.from_user.id, f"<b><i>Searching For {content} 🔍</i></b>", reply_to_message_id=message.id)
         await auto_filter(bot, content, message, reply_msg, ai_search)
+    else:
+        # PM search disabled: point users to the group instead of staying silent
+        await message.reply_text(
+            f"<b>Hey {message.from_user.mention} 👋\n\nPlease search movies / animes in our group.\n"
+            f"Type the name there and the bot will send the file here.</b>",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔎 Open Search Group", url=GRP_LNK)]])
+        )
     
 @Client.on_callback_query(filters.regex(r"^next"))
 async def next_page(bot, query):
@@ -1113,7 +1120,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             
     elif query.data == "buy_premium":
         btn = [[            
-            InlineKeyboardButton("✅sᴇɴᴅ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ ʀᴇᴄᴇɪᴘᴛ ʜᴇʀᴇ ✅", url = OWNER_LINK)
+            InlineKeyboardButton("✅sᴇɴᴅ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ ʀᴇᴄᴇɪᴘᴛ ʜᴇʀᴇ ✅", url = OWNER_LNK)
         ]
             for admin in ADMINS
         ]
