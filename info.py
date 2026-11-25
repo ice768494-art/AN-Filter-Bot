@@ -197,7 +197,7 @@ URL = environ.get("URL") or environ.get("RENDER_EXTERNAL_URL") or "https://testo
 
 
 # Rename Info : If True Then Bot Rename File Else Not
-RENAME_MODE = env_bool('RENAME_MODE', True) # Set True or False
+RENAME_MODE = env_bool('RENAME_MODE', False) # Set True or False
 
 
 # Auto Approve Info : If True Then Bot Approve New Upcoming Join Request Else Not
